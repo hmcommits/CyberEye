@@ -24,18 +24,27 @@ const upload = multer({ storage: storage });
 
 const ai = new GoogleGenAI({});
 
-// Exponential Backoff helper for Gemini
+// Exponential Backoff helper for Gemini with Graceful Model Degradation
 async function generateWithBackoff(prompt, maxRetries = 3, initialDelay = 1000) {
   let attempt = 0;
+  let targetModel = 'gemini-2.5-pro'; // User explicitly requested 2.5-Pro
+  
   while (attempt < maxRetries) {
     try {
       const response = await ai.models.generateContent({
-        model: 'gemini-2.5-flash',
+        model: targetModel,
         contents: prompt
       });
       return response.text;
     } catch (error) {
-      if (error.message && (error.message.includes('429') || error.message.includes('503'))) {
+      if (error.message && (error.message.includes('429') || error.message.includes('503') || error.message.includes('limit: 0'))) {
+        // If the free tier hard-blocks 2.5-Pro (limit: 0), gracefully degrade to Flash to avoid crashing
+        if (targetModel === 'gemini-2.5-pro' && error.message.includes('limit: 0')) {
+          console.warn('[Gemini Downgrade] Free Tier API Key detected. Downgrading from 2.5-Pro to 2.5-Flash to bypass limit: 0 block.');
+          targetModel = 'gemini-2.5-flash';
+          continue; // Immediately retry with Flash
+        }
+        
         attempt++;
         if (attempt >= maxRetries) throw error;
         const delay = initialDelay * Math.pow(2, attempt - 1);
@@ -126,7 +135,7 @@ exports.analyzeMedia = async (req, res) => {
             inlineData: { data: base64Image, mimeType: req.file.mimetype }
           },
           {
-            text: `You are the 'Brutal Judge'. Based on the image and these ViT Deepfake classifications: ${JSON.stringify(technicalWitness)}, provide a 3-sentence forensic analysis of physical anomalies (shadows, edges, lighting). End with VERDICT: AUTHENTIC or VERDICT: SYNTHETIC.`
+            text: `You are the 'Brutal Judge'. DO NOT TRUST the Hugging Face ViT classifications (${JSON.stringify(technicalWitness)}) as they are simulated placeholders. Rely ONLY on your own internal physics and biological audit of the attached image. Provide a 3-sentence forensic analysis of physical anomalies (shadows, edges, lighting). End with VERDICT: AUTHENTIC or VERDICT: SYNTHETIC based solely on your own visual analysis.`
           }
         ]
       }
