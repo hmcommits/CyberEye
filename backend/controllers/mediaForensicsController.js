@@ -64,28 +64,47 @@ exports.analyzeMedia = async (req, res) => {
     let technicalWitness = [];
     if (hfUrl) {
       try {
-        const fileStream = fs.createReadStream(filePath);
-        const formData = new FormData();
-        formData.append('file', fileStream);
-
-        const headers = { ...formData.getHeaders() };
-        if (hfToken) {
-          headers['Authorization'] = `Bearer ${hfToken}`;
-        }
-
-        const hfResponse = await axios.post(`${hfUrl}/api/v1/analyze-image`, formData, { headers, timeout: 30000 });
+        let hfResponse;
         
-        // Ensure array format for UI compatibility
-        if (hfResponse.data.analysis && Array.isArray(hfResponse.data.analysis)) {
-           technicalWitness = hfResponse.data.analysis;
-        } else if (hfResponse.data.analysis) {
-           technicalWitness = [{ 
-             label: hfResponse.data.analysis.predicted_class || 'Unknown Object', 
-             confidence: hfResponse.data.analysis.confidence_score || 0.0 
-           }];
+        if (hfUrl.includes('api-inference.huggingface.co')) {
+          // Direct HF Inference API Call
+          const fileBuffer = fs.readFileSync(filePath);
+          const headers = {
+            'Authorization': `Bearer ${hfToken}`,
+            'Content-Type': 'application/octet-stream'
+          };
+          hfResponse = await axios.post(hfUrl, fileBuffer, { headers, timeout: 30000 });
+          
+          if (Array.isArray(hfResponse.data)) {
+            technicalWitness = hfResponse.data.map(obj => ({
+              label: obj.label || obj.predicted_class || 'Unknown Object',
+              confidence: obj.score || obj.confidence_score || 0.0
+            }));
+          }
+        } else {
+          // Custom FastAPI Microservice Call
+          const fileStream = fs.createReadStream(filePath);
+          const formData = new FormData();
+          formData.append('file', fileStream);
+
+          const headers = { ...formData.getHeaders() };
+          if (hfToken) {
+            headers['Authorization'] = `Bearer ${hfToken}`;
+          }
+          hfResponse = await axios.post(`${hfUrl}/api/v1/analyze-image`, formData, { headers, timeout: 30000 });
+          
+          if (hfResponse.data.analysis && Array.isArray(hfResponse.data.analysis)) {
+             technicalWitness = hfResponse.data.analysis;
+          } else if (hfResponse.data.analysis) {
+             technicalWitness = [{ 
+               label: hfResponse.data.analysis.predicted_class || 'Unknown Object', 
+               confidence: hfResponse.data.analysis.confidence_score || 0.0 
+             }];
+          }
         }
       } catch (err) {
-        console.error('[HF Error]', err.message);
+        // Log the full error to the terminal for debugging
+        console.error('[HF Error details]:', err.response?.data || err.message);
         technicalWitness = [{ label: 'YOLOv12 API Unavailable', confidence: 0.0 }];
       }
     }
