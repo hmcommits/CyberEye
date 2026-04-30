@@ -194,8 +194,8 @@ class _ForensicsScreenState extends ConsumerState<ForensicsScreen> {
                         ),
                         const SizedBox(height: 32),
                         
-                        // Technical Witness (YOLOv12) Section
-                        const Text('TECHNICAL WITNESS (YOLOv12)', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white70, letterSpacing: 1.2)),
+                        // Technical Witness (ViT Deepfake Detector) Section
+                        const Text('TECHNICAL WITNESS (ViT Deepfake Detector)', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white70, letterSpacing: 1.2)),
                         const SizedBox(height: 12),
                         Container(
                           padding: const EdgeInsets.all(16),
@@ -212,7 +212,7 @@ class _ForensicsScreenState extends ConsumerState<ForensicsScreen> {
                                     child: Row(
                                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                       children: [
-                                        Text('OBJ: ${label.toString().toUpperCase()}', style: const TextStyle(fontFamily: 'monospace', color: Colors.white70)),
+                                        Text('CLASS: ${label.toString().toUpperCase()}', style: const TextStyle(fontFamily: 'monospace', color: Colors.white70)),
                                         Text('${conf.toStringAsFixed(2)}%', style: const TextStyle(fontFamily: 'monospace', color: Color(0xFF00FFCC))),
                                       ],
                                     ),

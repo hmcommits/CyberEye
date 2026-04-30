@@ -105,7 +105,7 @@ exports.analyzeMedia = async (req, res) => {
       } catch (err) {
         // Log the full error to the terminal for debugging
         console.error('[HF Error details]:', err.response?.data || err.message);
-        technicalWitness = [{ label: 'YOLOv12 API Unavailable', confidence: 0.0 }];
+        technicalWitness = [{ label: 'ViT API Unavailable', confidence: 0.0 }];
       }
     }
 
@@ -119,7 +119,7 @@ exports.analyzeMedia = async (req, res) => {
             inlineData: { data: base64Image, mimeType: req.file.mimetype }
           },
           {
-            text: `You are the 'Brutal Judge'. Based on the image and these YOLOv12 detections: ${JSON.stringify(technicalWitness)}, provide a 3-sentence forensic analysis of physical anomalies (shadows, edges, lighting). End with VERDICT: AUTHENTIC or VERDICT: SYNTHETIC.`
+            text: `You are the 'Brutal Judge'. Based on the image and these ViT Deepfake classifications: ${JSON.stringify(technicalWitness)}, provide a 3-sentence forensic analysis of physical anomalies (shadows, edges, lighting). End with VERDICT: AUTHENTIC or VERDICT: SYNTHETIC.`
           }
         ]
       }
