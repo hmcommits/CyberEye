@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import '../../../../shared/widgets/master_eye_widget.dart';
 
 class DashboardScreen extends StatelessWidget {
@@ -18,19 +19,19 @@ class DashboardScreen extends StatelessWidget {
       ),
       body: Padding(
         padding: const EdgeInsets.all(24.0),
-        child: isDesktop ? _buildDesktopLayout() : _buildMobileLayout(),
+        child: isDesktop ? _buildDesktopLayout(context) : _buildMobileLayout(context),
       ),
     );
   }
 
-  Widget _buildDesktopLayout() {
+  Widget _buildDesktopLayout(BuildContext context) {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         // Left Panel (Tools)
         Expanded(
           flex: 2,
-          child: _buildToolsMenu(),
+          child: _buildToolsMenu(context),
         ),
         // Center Panel (Master Eye)
         const Expanded(
@@ -46,13 +47,13 @@ class DashboardScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildMobileLayout() {
+  Widget _buildMobileLayout(BuildContext context) {
     return SingleChildScrollView(
       child: Column(
         children: [
           const SizedBox(height: 40, child: MasterEyeWidget()),
           const SizedBox(height: 40),
-          _buildToolsMenu(),
+          _buildToolsMenu(context),
           const SizedBox(height: 40),
           _buildLogsPanel(),
         ],
@@ -60,21 +61,21 @@ class DashboardScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildToolsMenu() {
+  Widget _buildToolsMenu(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         Text('Forensic Modules', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white70)),
         const SizedBox(height: 16),
-        _buildModuleCard('Media Forensic Lab', 'Deepfake & AI generation detection'),
-        _buildModuleCard('Neural Link Triage', 'URL Fraud & Typosquatting analysis'),
-        _buildModuleCard('Breach Guard', 'Dark web identity exposure monitor'),
-        _buildModuleCard('Legal Scout', 'TOS predatory clause auditor'),
+        _buildModuleCard(context, 'Media Forensic Lab', 'Deepfake & AI generation detection', '/forensics'),
+        _buildModuleCard(context, 'Neural Link Triage', 'URL Fraud & Typosquatting analysis', ''),
+        _buildModuleCard(context, 'Breach Guard', 'Dark web identity exposure monitor', ''),
+        _buildModuleCard(context, 'Legal Scout', 'TOS predatory clause auditor', ''),
       ],
     );
   }
 
-  Widget _buildModuleCard(String title, String subtitle) {
+  Widget _buildModuleCard(BuildContext context, String title, String subtitle, String route) {
     return Card(
       color: const Color(0xFF1A1A1A),
       margin: const EdgeInsets.only(bottom: 12),
@@ -83,7 +84,9 @@ class DashboardScreen extends StatelessWidget {
         subtitle: Text(subtitle, style: const TextStyle(color: Colors.white54)),
         trailing: const Icon(Icons.arrow_forward_ios, size: 16, color: Color(0xFF00FFCC)),
         onTap: () {
-          // TODO: Navigate to specific feature
+          if (route.isNotEmpty) {
+            context.push(route);
+          }
         },
       ),
     );
