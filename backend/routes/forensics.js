@@ -55,7 +55,7 @@ router.post('/analyze', upload.single('image'), async (req, res, next) => {
     try {
       const base64Image = req.file.buffer.toString('base64');
       const response = await ai.models.generateContent({
-        model: 'gemini-1.5-flash', // Gracefully degrading to 1.5-Flash to bypass the 'limit: 0' restriction on free-tier keys
+        model: 'gemini-2.5-flash', // Using 2.5-Flash since 2.5-Pro has limit 0 and 1.5-Flash throws 404
         contents: [
           {
             role: 'user',
