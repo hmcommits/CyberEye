@@ -40,7 +40,7 @@ Most users agree to "Predatory Terms" because they are too long to read. This mo
 
 | Layer | Technology | Role |
 | :--- | :--- | :--- |
-| **Frontend** | React.js (Vite) + Tailwind | The "Master Eye" high-contrast dashboard. |
+| **Frontend** | Flutter (Dart) + Riverpod | Cross-platform adaptive dashboard (Mobile/Desktop). |
 | **Primary Logic** | **Gemini 3.1 Pro** | The "Brutal Judge" and High-Reasoning Auditor. |
 | **Vision Model** | **Swin Transformer** | The technical witness for pixel-level forensics. |
 | **Cloud Inference** | Hugging Face Spaces | Hosting the specialized Python ML microservices. |

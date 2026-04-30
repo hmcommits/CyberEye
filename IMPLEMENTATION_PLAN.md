@@ -4,7 +4,7 @@ This is the definitive, zero-compromise implementation plan for **Project CyberE
 
 ### **1. Core System Architecture**
 CyberEye is built on a **Quad-Tier Security Stack**:
-*   **Frontend:** React 19 (Vite) + Tailwind CSS + Framer Motion (for the "Master Eye" animations).
+*   **Frontend:** Flutter (Dart 3.x) + Riverpod (Adaptive Mobile & Desktop UI).
 *   **Primary Backend:** Node.js (Vercel Edge Functions) for API orchestration.
 *   **Forensic Microservice:** Python (FastAPI) on Hugging Face Spaces for Swin/ViT inference.
 *   **Reasoning Engine:** Google Gemini 3.1 Pro API (High-Reasoning mode).
@@ -16,13 +16,13 @@ CyberEye is built on a **Quad-Tier Security Stack**:
 #### **A. Media Forensic Lab (M-Feature)**
 *   **Objective:** Multi-stage deepfake detection.
 *   **Step 1 (Technical Witness):** Setup a Python script on Hugging Face using `transformers`. Load `microsoft/swin-base-patch4-window7-224` (fine-tuned for deepfakes).
-*   **Step 2 (The Hook):** React frontend sends the image buffer to the HF Space.
+*   **Step 2 (The Hook):** Flutter frontend sends the image buffer to the HF Space.
 *   **Step 3 (Brutal Judge):** Node.js receives the Swin model's confidence score and patches. It then forwards the **Image + Swin Report** to Gemini 3.1 Pro.
 *   **Step 4 (XAI Output):** Gemini generates a "Brutal Decision" based on physics (shadows, biological logic). The UI renders a **Grad-CAM Heatmap** showing suspicious pixel regions.
 
 #### **B. Neural Link Triage (F-Feature)**
 *   **Objective:** Algorithmic and psychological URL audit.
-*   **Step 1 (Local Triage):** Implement a JavaScript utility in the frontend to calculate **Shannon Entropy** (randomness) and **Levenshtein Distance** (similarity to sites like Google/Amazon).
+*   **Step 1 (Local Triage):** Implement a Dart Isolate utility in the frontend to calculate **Shannon Entropy** (randomness) and **Levenshtein Distance** (similarity to sites like Google/Amazon) at 120 FPS.
 *   **Step 2 (The Judge):** Pass the full message context and URL metadata to Gemini 3.1 Pro.
 *   **Step 3 (Social Engineering Check):** Gemini identifies "Linguistic Urgency" or "Credential Phishing" patterns.
 *   **Step 4 (Verdict):** Display a "Risk Level" (0-100) and the **Safe Mode Bridge** button if the risk is $>40\%$.
@@ -39,7 +39,7 @@ CyberEye is built on a **Quad-Tier Security Stack**:
 #### **D. CyberCheck360 Sandbox (The Bridge)**
 *   **Objective:** 100% hardware isolation for suspicious links.
 *   **Step 1 (The Handshake):** When a user clicks "Open in Safe Mode," the URL is Base64 encoded.
-*   **Step 2 (Redirect):** The app opens a new tab to the **CyberCheck360** endpoint with the encoded payload: `[https://cybercheck360.com/detonate?target=BASE64_URL](https://cybercheck360.com/detonate?target=BASE64_URL)`.
+*   **Step 2 (Redirect):** The app triggers the device's external browser (via `url_launcher`) to the **CyberCheck360** endpoint with the encoded payload: `[https://cybercheck360.com/detonate?target=BASE64_URL](https://cybercheck360.com/detonate?target=BASE64_URL)`.
 *   **Step 3 (UX):** A warning modal appears first, explaining that the site is now "detonating" in a cloud container.
 
 #### **E. Legal Scout (TOS Feature)**
@@ -56,7 +56,7 @@ CyberEye is built on a **Quad-Tier Security Stack**:
 
 | Phase | Task | Key Deliverable |
 | :--- | :--- | :--- |
-| **Wk 1** | **Foundation** | Vite setup + Tailwind + Left Sidebar + Lucide Icons. |
+| **Wk 1** | **Foundation** | Flutter setup + Adaptive Theming + Riverpod + Desktop Drag/Drop. |
 | **Wk 2** | **ML Microservice** | Deploy FastAPI on Hugging Face with Swin Transformer. |
 | **Wk 3** | **Ensemble Core** | Connect Node.js to Gemini 3.1 & HF Space. Implement the "Brutal Judge" logic. |
 | **Wk 4** | **Data & Sandbox** | HIBP Integration + Breach Text Mapping + CyberCheck360 Bridge. |
@@ -77,7 +77,7 @@ CyberEye is built on a **Quad-Tier Security Stack**:
 *   [ ] **Algorithmic:** Levenshtein and Shannon Entropy implemented locally.
 *   [ ] **Machine Learning:** Swin Transformer running on server-side GPU/CPU.
 *   [ ] **Reasoning:** Gemini 3.1 Pro performing "High Thinking" physics audits.
-*   [ ] **Architecture:** Serverless Microservice structure (React + Node + Python).
+*   [ ] **Architecture:** Serverless Microservice structure (Flutter + Node + Python).
 *   [ ] **Isolation:** External Detonation via CyberCheck360 bridge.
 
 **CyberEye is now fully mapped. Would you like to see the specific JSON mapping for the "Breach Guard" text explanations to ensure they are professional and detailed?**
