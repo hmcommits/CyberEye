@@ -27,7 +27,7 @@ const ai = new GoogleGenAI({});
 // Exponential Backoff helper for Gemini
 async function generateWithBackoff(prompt, maxRetries = 3, initialDelay = 1000) {
   let attempt = 0;
-  let targetModel = 'gemini-1.5-flash'; // High quota efficient model
+  let targetModel = 'gemini-2.0-flash'; // High quota efficient model
   
   while (attempt < maxRetries) {
     try {
