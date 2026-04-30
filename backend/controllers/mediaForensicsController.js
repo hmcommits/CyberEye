@@ -116,11 +116,9 @@ exports.analyzeMedia = async (req, res) => {
         console.error('[HF Inference Warning]: The remote HF model is either sleeping or does not have a public serverless API endpoint.');
         console.error('[HF Error payload]:', (err.response?.data?.toString() || err.message).substring(0, 100));
         
-        // Since many 2026-era advanced models aren't hosted on the free tier, 
-        // we simulate the expected ViT Deepfake classification output for the architecture.
+        // Removed hardcoded fallback per user request. Explicitly mentioning the failure.
         technicalWitness = [
-          { label: 'artificial_artifacts_detected', confidence: 0.942 },
-          { label: 'human_baseline', confidence: 0.058 }
+          { label: 'ViT_API_UNAVAILABLE (HF Cloud Blocked)', confidence: 0.0 }
         ];
       }
     }
