@@ -22,11 +22,11 @@ This is the ultimate "Safe Mode" for links that are suspicious but require close
 *   **Isolated Detonation:** The link is opened in a **Cloud-Based Disposable Browser**. Any "drive-by" malware or tracking scripts execute on a remote server that is deleted instantly after the session.
 *   **Security Benefit:** Total local hardware isolation. The user's device remains "air-gapped" from the malicious code while still being able to view the content.
 
-### 4. Breach Guard (Identity Recovery)
-A proactive tool that monitors the dark web for user vulnerabilities and provides a clear, actionable roadmap for recovery — with no AI dependency required.
-*   **Reconnaissance:** Connects to the **HIBP (Have I Been Pwned) API** to identify every historical data breach associated with the user's email or phone number.
-*   **Static Severity Classification:** Leaked data classes (e.g., *"Plaintext Password," "Financial Info," "PII"*) are mapped against a curated severity matrix to instantly categorize the risk level without any AI call.
-*   **Output:** A personalized **3-Step Recovery Plan** (e.g., *"Switch to TOTP-based MFA immediately; your phone number was leaked in the 2025 Meta breach."*) derived directly from HIBP breach metadata.
+### 4. Breach Guard (Password Sentinel)
+A proactive privacy-first tool that checks if a user's password has been exposed in a data breach using cryptographic K-Anonymity.
+*   **Reconnaissance:** Uses the free **Pwned Passwords Range API**. It hashes the password locally (SHA-1), sends only the first 5 characters (the prefix) to the API, and checks the response locally to see if the full hash exists.
+*   **Privacy Guarantee:** The full password or full hash never leaves the user's device, ensuring mathematical privacy.
+*   **Output:** A direct warning detailing exactly how many times that specific password has been seen in dark web breaches, prompting immediate rotation.
 
 ### 5. Legal Scout (The TOS Auditor)
 Most users agree to "Predatory Terms" because they are too long to read. This module uses high-reasoning AI to protect the user's legal rights.

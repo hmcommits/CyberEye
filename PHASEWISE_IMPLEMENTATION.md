@@ -60,15 +60,15 @@ This document outlines the detailed practical implementation plan and task list 
 *   [ ] **Backend:** Integrate with Gemini 3.1 Pro to perform the "Social Engineering Check".
 *   [ ] **Flutter:** Display the "Risk Level" and detailed analysis. Show the "Safe Mode Bridge" button if the risk threshold is met.
 
-## Phase 6: Feature C - Breach Guard
+## Phase 6: Feature C - Breach Guard (Password Sentinel)
 
-**Goal:** Integrate HIBP API and implement the static severity classification mapping.
+**Goal:** Implement K-Anonymity password checking using the free Pwned Passwords API.
 
-*   [ ] **Flutter:** Create an input form to submit an email address.
-*   [ ] **Backend:** Implement an endpoint (`/api/breach/check`) that securely proxies requests to the HIBP API (v3).
-*   [ ] **Backend/Utility:** Create the static JSON mapping dictionary that correlates HIBP `DataClasses` to human-readable severity alerts.
-*   [ ] **Backend:** Process the HIBP response, apply the static mapping, and formulate the final "Identity Risk Report".
-*   [ ] **Flutter:** Render the resulting 3-Step Recovery Plan and specific breach details using adaptive data tables.
+*   [ ] **Flutter:** Create an input form with obscured text to submit a password.
+*   [ ] **Flutter:** Implement SHA-1 hashing algorithm locally.
+*   [ ] **Flutter:** Extract the 5-character prefix and send it to the backend.
+*   [ ] **Backend:** Implement an endpoint (`/api/breach/check-range`) that proxies the prefix to `api.pwnedpasswords.com/range/{prefix}`.
+*   [ ] **Flutter:** Receive the text payload of suffixes, locally compare against the remaining SHA-1 hash, and render the total breach exposure count warning.
 
 ## Phase 7: Feature D - CyberCheck360 Sandbox
 

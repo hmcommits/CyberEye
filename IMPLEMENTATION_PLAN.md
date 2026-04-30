@@ -27,14 +27,12 @@ CyberEye is built on a **Quad-Tier Security Stack**:
 *   **Step 3 (Social Engineering Check):** Gemini identifies "Linguistic Urgency" or "Credential Phishing" patterns.
 *   **Step 4 (Verdict):** Display a "Risk Level" (0-100) and the **Safe Mode Bridge** button if the risk is $>40\%$.
 
-#### **C. Breach Guard (B-Feature)**
-*   **Objective:** Dark web exposure monitoring without AI dependency.
-*   **Step 1 (The Recon):** Integrate the **HIBP API (v3)**. Frontend sends the user's email to a secure Node.js proxy (to hide your HIBP API Key).
-*   **Step 2 (Static Mapping):** Create a JSON map of breach types to text-based explanations:
-    *   `Passwords` $\rightarrow$ *"High Risk: Your login credentials were exposed. Change passwords immediately."*
-    *   `PII (Personal Info)` $\rightarrow$ *"Medium Risk: Your name/address was leaked. Watch for targeted phishing."*
-    *   `Financial` $\rightarrow$ *"Critical: Payment info leaked. Contact your bank."*
-*   **Step 3 (The Logic):** If HIBP returns multiple breaches, the system aggregates these static texts into a single "Identity Risk Report" on the UI.
+#### **C. Breach Guard (Password Sentinel)**
+*   **Objective:** Password breach detection using K-Anonymity (Zero-Cost).
+*   **Step 1 (Local Hashing):** The Flutter frontend hashes the user's inputted password using SHA-1.
+*   **Step 2 (The Proxy):** The frontend sends **only the first 5 characters** of the hash to the Node.js backend proxy.
+*   **Step 3 (The Recon):** Node.js makes a GET request to `https://api.pwnedpasswords.com/range/{prefix}` and returns the list of matching hash suffixes and breach counts.
+*   **Step 4 (Local Verification):** Flutter receives the list, searches for the remaining characters of the local hash, and if a match is found, displays the exposure count.
 
 #### **D. CyberCheck360 Sandbox (The Bridge)**
 *   **Objective:** 100% hardware isolation for suspicious links.
