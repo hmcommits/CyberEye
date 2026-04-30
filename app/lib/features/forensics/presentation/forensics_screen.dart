@@ -1,4 +1,5 @@
 import 'dart:typed_data';
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
@@ -6,7 +7,6 @@ import 'package:desktop_drop/desktop_drop.dart';
 import '../data/forensics_repository.dart';
 import '../../../../shared/widgets/master_eye_widget.dart';
 
-// Riverpod Provider for State
 final forensicAnalysisProvider = StateNotifierProvider<ForensicAnalysisNotifier, AsyncValue<Map<String, dynamic>?>>((ref) {
   return ForensicAnalysisNotifier(ref.read(forensicsRepositoryProvider));
 });
@@ -23,10 +23,6 @@ class ForensicAnalysisNotifier extends StateNotifier<AsyncValue<Map<String, dyna
     } catch (e, st) {
       state = AsyncError(e, st);
     }
-  }
-  
-  void reset() {
-    state = const AsyncData(null);
   }
 }
 
@@ -51,6 +47,31 @@ class _ForensicsScreenState extends ConsumerState<ForensicsScreen> {
       });
       ref.read(forensicAnalysisProvider.notifier).analyze(bytes, xFile.name);
     }
+  }
+
+  Widget _buildGlassmorphicCard({required Widget child}) {
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(16.0),
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 10.0, sigmaY: 10.0),
+        child: Container(
+          padding: const EdgeInsets.all(24.0),
+          decoration: BoxDecoration(
+            color: Colors.white.withOpacity(0.05),
+            borderRadius: BorderRadius.circular(16.0),
+            border: Border.all(color: Colors.white.withOpacity(0.1), width: 1.5),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.2),
+                blurRadius: 10,
+                spreadRadius: 2,
+              )
+            ],
+          ),
+          child: child,
+        ),
+      ),
+    );
   }
 
   @override
@@ -86,142 +107,146 @@ class _ForensicsScreenState extends ConsumerState<ForensicsScreen> {
               // Left: Image View & Picker
               Expanded(
                 flex: 1,
-                child: Column(
-                  children: [
-                    Expanded(
-                      child: Container(
-                        decoration: BoxDecoration(
-                          border: Border.all(color: Colors.white24, width: 2),
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: _selectedImageBytes == null
-                            ? Center(
-                                child: Column(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    const Icon(Icons.upload_file, size: 64, color: Colors.white54),
-                                    const SizedBox(height: 16),
-                                    ElevatedButton(
-                                      onPressed: _pickImage,
-                                      style: ElevatedButton.styleFrom(
-                                        backgroundColor: const Color(0xFF00FFCC),
-                                        foregroundColor: Colors.black,
-                                      ),
-                                      child: const Text('Select or Drop Target Media'),
-                                    ),
-                                  ],
+                child: Container(
+                  decoration: BoxDecoration(
+                    border: Border.all(color: Colors.white24, width: 2),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: _selectedImageBytes == null
+                      ? Center(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              const Icon(Icons.upload_file, size: 64, color: Colors.white54),
+                              const SizedBox(height: 16),
+                              ElevatedButton(
+                                onPressed: _pickImage,
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: const Color(0xFF00FFCC),
+                                  foregroundColor: Colors.black,
                                 ),
-                              )
-                            : Stack(
-                                fit: StackFit.expand,
-                                children: [
-                                  ClipRRect(
-                                    borderRadius: BorderRadius.circular(10),
-                                    child: Image.memory(_selectedImageBytes!, fit: BoxFit.cover),
-                                  ),
-                                  // Placeholder for Grad-CAM overlay if analysis is done
-                                  if (analysisState is AsyncData && analysisState.value != null)
-                                    Container(
-                                      decoration: BoxDecoration(
-                                        gradient: RadialGradient(
-                                          colors: [
-                                            Colors.red.withOpacity(0.4),
-                                            Colors.transparent,
-                                          ],
-                                          radius: 0.8,
-                                        ),
-                                      ),
-                                    ),
-                                ],
+                                child: const Text('Select or Drop Target Media'),
                               ),
-                      ),
-                    ),
-                  ],
+                            ],
+                          ),
+                        )
+                      : Stack(
+                          fit: StackFit.expand,
+                          children: [
+                            ClipRRect(
+                              borderRadius: BorderRadius.circular(10),
+                              child: Image.memory(_selectedImageBytes!, fit: BoxFit.cover),
+                            ),
+                          ],
+                        ),
                 ),
               ),
               const SizedBox(width: 24),
               // Right: Analysis Panel
               Expanded(
                 flex: 1,
-                child: Container(
-                  padding: const EdgeInsets.all(24),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF1A1A1A),
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: Colors.white12),
-                  ),
-                  child: analysisState.when(
-                    data: (data) {
-                      if (data == null) {
-                        return const Center(
-                          child: Text('Awaiting payload for structural analysis...', 
-                                      style: TextStyle(color: Colors.white54, fontFamily: 'monospace')),
-                        );
-                      }
-                      
-                      final tw = data['report']['technical_witness'];
-                      final judge = data['report']['brutal_judge_verdict'];
-                      
-                      final hasGeminiError = judge.toString().toLowerCase().contains('error') || judge.toString().toLowerCase().contains('quota');
-                      final isSynthetic = !hasGeminiError && (judge.toString().contains('SYNTHETIC') || tw['technical_witness_verdict'] == 'review_required');
+                child: analysisState.when(
+                  data: (data) {
+                    if (data == null) {
+                      return const Center(
+                        child: Text('Awaiting payload for structural analysis...', 
+                                    style: TextStyle(color: Colors.white54, fontFamily: 'monospace')),
+                      );
+                    }
+                    
+                    final witnessData = data['technical_witness'] as List<dynamic>? ?? [];
+                    final judgeVerdict = data['brutal_judge']?.toString() ?? 'N/A';
+                    
+                    final hasGeminiError = judgeVerdict.toLowerCase().contains('error') || judgeVerdict.toLowerCase().contains('quota');
+                    final isSynthetic = !hasGeminiError && judgeVerdict.contains('SYNTHETIC');
 
-                      String headerText;
-                      Color headerColor;
-                      
-                      if (hasGeminiError) {
-                        headerText = '⚠️ AUDIT UNAVAILABLE (API ERROR)';
-                        headerColor = Colors.orangeAccent;
-                      } else if (isSynthetic) {
-                        headerText = '🚨 SYNTHETIC ANOMALY DETECTED';
-                        headerColor = const Color(0xFFFF0055);
-                      } else {
-                        headerText = '✅ AUTHENTICATED';
-                        headerColor = const Color(0xFF00FFCC);
-                      }
+                    String headerText;
+                    Color headerColor;
+                    
+                    if (hasGeminiError) {
+                      headerText = '⚠️ AUDIT UNAVAILABLE';
+                      headerColor = Colors.orangeAccent;
+                    } else if (isSynthetic) {
+                      headerText = '🚨 SYNTHETIC ANOMALY DETECTED';
+                      headerColor = const Color(0xFFFF0055);
+                    } else {
+                      headerText = '✅ AUTHENTICATED';
+                      headerColor = const Color(0xFF00FFCC);
+                    }
 
-                      return ListView(
-                        children: [
-                          Row(
-                            children: [
-                              const MasterEyeWidget(), // Smaller size ideally, but placeholder ok
-                              const SizedBox(width: 16),
-                              Expanded(
-                                child: Text(
-                                  headerText,
-                                  style: TextStyle(
-                                    fontSize: 24, 
-                                    fontWeight: FontWeight.bold, 
-                                    color: headerColor,
-                                  ),
+                    return ListView(
+                      children: [
+                        Row(
+                          children: [
+                            const MasterEyeWidget(),
+                            const SizedBox(width: 16),
+                            Expanded(
+                              child: Text(
+                                headerText,
+                                style: TextStyle(
+                                  fontSize: 24, 
+                                  fontWeight: FontWeight.bold, 
+                                  color: headerColor,
                                 ),
                               ),
-                            ],
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 32),
+                        
+                        // Technical Witness (YOLOv12) Section
+                        const Text('TECHNICAL WITNESS (YOLOv12)', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white70, letterSpacing: 1.2)),
+                        const SizedBox(height: 12),
+                        Container(
+                          padding: const EdgeInsets.all(16),
+                          decoration: BoxDecoration(color: Colors.black26, borderRadius: BorderRadius.circular(8), border: Border.all(color: Colors.white10)),
+                          child: witnessData.isEmpty 
+                            ? const Text('No structural objects detected or API unavailable.', style: TextStyle(color: Colors.white54, fontFamily: 'monospace'))
+                            : Column(
+                                crossAxisAlignment: CrossAxisAlignment.stretch,
+                                children: witnessData.map((obj) {
+                                  final label = obj['label'] ?? 'Unknown';
+                                  final conf = (obj['confidence'] ?? 0.0) * 100;
+                                  return Padding(
+                                    padding: const EdgeInsets.only(bottom: 8.0),
+                                    child: Row(
+                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        Text('OBJ: ${label.toString().toUpperCase()}', style: const TextStyle(fontFamily: 'monospace', color: Colors.white70)),
+                                        Text('${conf.toStringAsFixed(2)}%', style: const TextStyle(fontFamily: 'monospace', color: Color(0xFF00FFCC))),
+                                      ],
+                                    ),
+                                  );
+                                }).toList(),
+                              ),
+                        ),
+                        
+                        const SizedBox(height: 32),
+                        
+                        // Brutal Judge (Glassmorphic Card)
+                        const Text('BRUTAL JUDGE VERDICT (GEMINI 2.5 FLASH)', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white70, letterSpacing: 1.2)),
+                        const SizedBox(height: 12),
+                        _buildGlassmorphicCard(
+                          child: Text(
+                            judgeVerdict,
+                            style: const TextStyle(height: 1.6, fontSize: 16, color: Colors.white),
                           ),
-                          const Divider(height: 48, color: Colors.white24),
-                          const Text('TECHNICAL WITNESS (SWIN-B)', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white70)),
-                          const SizedBox(height: 8),
-                          Text('Predicted Class: ${tw['predicted_class'] ?? 'N/A'}', style: const TextStyle(fontFamily: 'monospace')),
-                          Text('Confidence Score: ${tw['confidence_score'] ?? 'N/A'}', style: const TextStyle(fontFamily: 'monospace')),
-                          const SizedBox(height: 24),
-                          const Text('BRUTAL JUDGE (GEMINI 3.1 PRO)', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white70)),
-                          const SizedBox(height: 8),
-                          Text(judge, style: const TextStyle(height: 1.5)),
-                        ],
-                      );
-                    },
-                    loading: () => Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: const [
-                          MasterEyeWidget(),
-                          SizedBox(height: 24),
-                          Text('Executing multi-stage anatomical audit...', style: TextStyle(color: Color(0xFF00FFCC), fontFamily: 'monospace')),
-                        ],
-                      ),
+                        ),
+                      ],
+                    );
+                  },
+                  loading: () => Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: const [
+                        MasterEyeWidget(),
+                        SizedBox(height: 24),
+                        Text('Executing multi-stage anatomical audit...', style: TextStyle(color: Color(0xFF00FFCC), fontFamily: 'monospace')),
+                      ],
                     ),
-                    error: (err, st) => Center(
-                      child: Text('Audit Failed: $err', style: const TextStyle(color: Color(0xFFFF0055))),
-                    ),
+                  ),
+                  error: (err, st) => Center(
+                    child: Text('Audit Failed: $err', style: const TextStyle(color: Color(0xFFFF0055))),
                   ),
                 ),
               ),
