@@ -24,10 +24,10 @@ const upload = multer({ storage: storage });
 
 const ai = new GoogleGenAI({});
 
-// Exponential Backoff helper for Gemini with Graceful Model Degradation
+// Exponential Backoff helper for Gemini
 async function generateWithBackoff(prompt, maxRetries = 3, initialDelay = 1000) {
   let attempt = 0;
-  let targetModel = 'gemini-2.5-pro'; // User explicitly requested 2.5-Pro
+  let targetModel = 'gemini-1.5-flash'; // High quota efficient model
   
   while (attempt < maxRetries) {
     try {
@@ -37,14 +37,7 @@ async function generateWithBackoff(prompt, maxRetries = 3, initialDelay = 1000) 
       });
       return response.text;
     } catch (error) {
-      if (error.message && (error.message.includes('429') || error.message.includes('503') || error.message.includes('limit: 0'))) {
-        // If the free tier hard-blocks 2.5-Pro (limit: 0), gracefully degrade to Flash to avoid crashing
-        if (targetModel === 'gemini-2.5-pro' && error.message.includes('limit: 0')) {
-          console.warn('[Gemini Downgrade] Free Tier API Key detected. Downgrading from 2.5-Pro to 2.5-Flash to bypass limit: 0 block.');
-          targetModel = 'gemini-2.5-flash';
-          continue; // Immediately retry with Flash
-        }
-        
+      if (error.message && (error.message.includes('429') || error.message.includes('503') || error.message.includes('limit: 0') || error.message.includes('quota'))) {
         attempt++;
         if (attempt >= maxRetries) throw error;
         const delay = initialDelay * Math.pow(2, attempt - 1);
