@@ -161,7 +161,23 @@ class _ForensicsScreenState extends ConsumerState<ForensicsScreen> {
                       
                       final tw = data['report']['technical_witness'];
                       final judge = data['report']['brutal_judge_verdict'];
-                      final isSynthetic = judge.contains('SYNTHETIC') || tw['technical_witness_verdict'] == 'review_required';
+                      
+                      final hasError = judge.toString().toLowerCase().contains('error') || tw['error'] != null;
+                      final isSynthetic = !hasError && (judge.toString().contains('SYNTHETIC') || tw['technical_witness_verdict'] == 'review_required');
+
+                      String headerText;
+                      Color headerColor;
+                      
+                      if (hasError) {
+                        headerText = '⚠️ AUDIT UNAVAILABLE (API ERROR)';
+                        headerColor = Colors.orangeAccent;
+                      } else if (isSynthetic) {
+                        headerText = '🚨 SYNTHETIC ANOMALY DETECTED';
+                        headerColor = const Color(0xFFFF0055);
+                      } else {
+                        headerText = '✅ AUTHENTICATED';
+                        headerColor = const Color(0xFF00FFCC);
+                      }
 
                       return ListView(
                         children: [
@@ -171,11 +187,11 @@ class _ForensicsScreenState extends ConsumerState<ForensicsScreen> {
                               const SizedBox(width: 16),
                               Expanded(
                                 child: Text(
-                                  isSynthetic ? '🚨 SYNTHETIC ANOMALY DETECTED' : '✅ AUTHENTICATED',
+                                  headerText,
                                   style: TextStyle(
                                     fontSize: 24, 
                                     fontWeight: FontWeight.bold, 
-                                    color: isSynthetic ? const Color(0xFFFF0055) : const Color(0xFF00FFCC),
+                                    color: headerColor,
                                   ),
                                 ),
                               ),
