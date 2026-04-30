@@ -1,4 +1,4 @@
-import 'dart:io';
+import 'dart:typed_data';
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -10,9 +10,9 @@ class ForensicsRepository {
   final Dio _dio;
   ForensicsRepository(this._dio);
 
-  Future<Map<String, dynamic>> analyzeImage(String filePath) async {
+  Future<Map<String, dynamic>> analyzeImage(Uint8List bytes, String fileName) async {
     final formData = FormData.fromMap({
-      'image': await MultipartFile.fromFile(filePath),
+      'image': MultipartFile.fromBytes(bytes, filename: fileName),
     });
 
     try {

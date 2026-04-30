@@ -1,4 +1,4 @@
-import 'dart:io';
+import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
@@ -15,10 +15,10 @@ class ForensicAnalysisNotifier extends StateNotifier<AsyncValue<Map<String, dyna
   final ForensicsRepository _repository;
   ForensicAnalysisNotifier(this._repository) : super(const AsyncData(null));
 
-  Future<void> analyze(String filePath) async {
+  Future<void> analyze(Uint8List bytes, String fileName) async {
     state = const AsyncLoading();
     try {
-      final result = await _repository.analyzeImage(filePath);
+      final result = await _repository.analyzeImage(bytes, fileName);
       state = AsyncData(result);
     } catch (e, st) {
       state = AsyncError(e, st);
@@ -38,17 +38,18 @@ class ForensicsScreen extends ConsumerStatefulWidget {
 }
 
 class _ForensicsScreenState extends ConsumerState<ForensicsScreen> {
-  String? _selectedFilePath;
+  Uint8List? _selectedImageBytes;
   bool _isDragging = false;
 
   Future<void> _pickImage() async {
     final picker = ImagePicker();
     final xFile = await picker.pickImage(source: ImageSource.gallery);
     if (xFile != null) {
+      final bytes = await xFile.readAsBytes();
       setState(() {
-        _selectedFilePath = xFile.path;
+        _selectedImageBytes = bytes;
       });
-      ref.read(forensicAnalysisProvider.notifier).analyze(xFile.path);
+      ref.read(forensicAnalysisProvider.notifier).analyze(bytes, xFile.name);
     }
   }
 
@@ -62,12 +63,14 @@ class _ForensicsScreenState extends ConsumerState<ForensicsScreen> {
         backgroundColor: Colors.transparent,
       ),
       body: DropTarget(
-        onDragDone: (detail) {
+        onDragDone: (detail) async {
           if (detail.files.isNotEmpty) {
+            final file = detail.files.first;
+            final bytes = await file.readAsBytes();
             setState(() {
-              _selectedFilePath = detail.files.first.path;
+              _selectedImageBytes = bytes;
             });
-            ref.read(forensicAnalysisProvider.notifier).analyze(_selectedFilePath!);
+            ref.read(forensicAnalysisProvider.notifier).analyze(bytes, file.name);
           }
         },
         onDragEntered: (detail) => setState(() => _isDragging = true),
@@ -91,7 +94,7 @@ class _ForensicsScreenState extends ConsumerState<ForensicsScreen> {
                           border: Border.all(color: Colors.white24, width: 2),
                           borderRadius: BorderRadius.circular(12),
                         ),
-                        child: _selectedFilePath == null
+                        child: _selectedImageBytes == null
                             ? Center(
                                 child: Column(
                                   mainAxisAlignment: MainAxisAlignment.center,
@@ -114,7 +117,7 @@ class _ForensicsScreenState extends ConsumerState<ForensicsScreen> {
                                 children: [
                                   ClipRRect(
                                     borderRadius: BorderRadius.circular(10),
-                                    child: Image.file(File(_selectedFilePath!), fit: BoxFit.cover),
+                                    child: Image.memory(_selectedImageBytes!, fit: BoxFit.cover),
                                   ),
                                   // Placeholder for Grad-CAM overlay if analysis is done
                                   if (analysisState is AsyncData && analysisState.value != null)
