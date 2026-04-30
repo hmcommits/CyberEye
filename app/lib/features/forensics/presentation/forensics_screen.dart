@@ -162,13 +162,13 @@ class _ForensicsScreenState extends ConsumerState<ForensicsScreen> {
                       final tw = data['report']['technical_witness'];
                       final judge = data['report']['brutal_judge_verdict'];
                       
-                      final hasError = judge.toString().toLowerCase().contains('error') || tw['error'] != null;
-                      final isSynthetic = !hasError && (judge.toString().contains('SYNTHETIC') || tw['technical_witness_verdict'] == 'review_required');
+                      final hasGeminiError = judge.toString().toLowerCase().contains('error') || judge.toString().toLowerCase().contains('quota');
+                      final isSynthetic = !hasGeminiError && (judge.toString().contains('SYNTHETIC') || tw['technical_witness_verdict'] == 'review_required');
 
                       String headerText;
                       Color headerColor;
                       
-                      if (hasError) {
+                      if (hasGeminiError) {
                         headerText = '⚠️ AUDIT UNAVAILABLE (API ERROR)';
                         headerColor = Colors.orangeAccent;
                       } else if (isSynthetic) {
